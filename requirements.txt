@@ -1,7 +1,7 @@
 torch>=1.13.1
 transformers>=4.37.2
 fschat>=0.2.35
-datasets>=2.17.0
+datasets>=2.17.0,~=3.6
 omegaconf
 accelerate
 
@@ -16,3 +16,5 @@ accelerate
 # rouge==1.0.1
 # fuzzywuzzy==0.18.0
 # jieba==0.42.1
+
+# Fix the following issue regarding inconsistent datasets package version https://github.com/huggingface/datasets/issues/7693#issuecomment-3103380232
