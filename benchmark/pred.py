@@ -6,6 +6,11 @@ import json
 from tqdm import tqdm
 import argparse
 from omegaconf import OmegaConf
+
+# https://stackoverflow.com/a/49559064 on 18 Nov 2025, CC BY-SA 4.0
+import sys
+sys.path.insert(0,"")
+
 from inf_llm.utils import patch_hf, GreedySearch, patch_model_center
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
