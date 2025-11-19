@@ -19,12 +19,17 @@ def huggingface_forward(forward):
         **kwargs,
     ):
         assert not output_attentions
+        try:
+          num_heads = self.num_heads 
+        except AttributeError:
+          num_heads = self.num_attention_heads
         ret = forward(
             self, hidden_states, hidden_states,
             position_ids, use_cache, past_key_value,
             self.q_proj, self.k_proj, self.v_proj, self.o_proj, 
-            self.head_dim, self.num_heads, self.num_key_value_heads
+            self.head_dim, num_heads, self.num_key_value_heads
         )
+
         if use_cache:
             o, pkv = ret
         else:
