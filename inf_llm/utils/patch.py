@@ -45,6 +45,12 @@ def patch_hf(
     from transformers.models.mistral.modeling_mistral import MistralAttention, MistralModel
     from transformers.models.qwen2.modeling_qwen2 import Qwen2Attention, Qwen2Model
 
+    print("[INSPECT]: model\n", model.__dict__)
+
+    print("[INSPECT]: model.model\n", model.model.__dict__)
+
+    print("[INSPECT] model.model.layer[0]", model.model.layers[0].__dict__)
+
     def model_forward(
         self,
         input_ids: torch.LongTensor = None,
