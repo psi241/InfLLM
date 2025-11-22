@@ -155,11 +155,12 @@ def patch_hf(
     else:
         raise ValueError("Only supports llama, mistral and qwen2 models.")
 
-    hf_rope = model.model.layers[0].self_attn.rotary_emb 
-    base = base if base is not None else hf_rope.base
+    # hf_rope = model.model.layers[0].self_attn.rotary_emb
+    rope_config = model.model.rotary_emb.config
+    base = base if base is not None else rope_config.rope_parameters["rope_theta"]
     distance_scale = distance_scale if distance_scale is not None else 1.0
     rope = RotaryEmbeddingESM(
-        hf_rope.dim,
+        getattr(rope_config, "head_dim", None) or rope_config.hidden_size // rope_config .num_attention_heads,
         base,
         distance_scale
     )
