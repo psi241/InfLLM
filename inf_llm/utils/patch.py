@@ -25,6 +25,11 @@ def huggingface_forward(forward):
           num_heads = self.config.num_attention_heads
 
         try:
+          num_heads = self.num_heads 
+        except AttributeError:
+          num_heads = self.config.num_attention_heads
+
+        try:
           num_key_value_heads = self.num_key_value_heads
         except AttributeError:
           num_key_value_heads = self.config.num_key_value_heads
