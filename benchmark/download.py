@@ -5,5 +5,5 @@ all_datasets = ["narrativeqa", "qasper", "multifieldqa_en", "multifieldqa_zh", "
                     "passage_count", "passage_retrieval_en", "passage_retrieval_zh", "lcc", "repobench-p"]
 
 for dataset in all_datasets:
-    data = load_dataset('THUDM/LongBench', dataset, split='test')
+    data = load_dataset('THUDM/LongBench', dataset, split='test', trust_remote_code=True)
     data.save_to_disk(f"benchmark/data/longbench/{dataset}")
