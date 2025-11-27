@@ -309,14 +309,14 @@ if __name__ == '__main__':
     # predict on each dataset
     for dataset in datasets:
         dname = dataset
-        
+
         data = load_from_disk(
             f"benchmark/data/longbench/{dataset}"
         )
 
         out_path = os.path.join(
             output_dir_path,
-            f"{dname}_{args.config_path}.jsonl"
+            f"{dname}_{args.path}_{args.type}.jsonl"
         )
 
         print(f"Pred {dname}")
