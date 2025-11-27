@@ -6,6 +6,6 @@ model:
   fattn: true
 
 max_len: 32768
-chunk_size: 8192
+chunk_size: 2048
 conv_type: qwen
 truncation: suffix
