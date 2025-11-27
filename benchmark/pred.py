@@ -309,20 +309,14 @@ if __name__ == '__main__':
     # predict on each dataset
     for dataset in datasets:
         dname = dataset
-        if dataset in set([
-            "kv_retrieval", "passkey", "number_string", "code_run", "code_debug", "longdialogue_qa_eng", "longbook_qa_eng", "longbook_sum_eng", "longbook_choice_eng", "longbook_qa_chn", "math_find", "math_calc"
-        ]):
-            path = "benchmark/data/infinite-bench"
-            data = load_infinite_bench(path, dname)
-
-        else:
-            data = load_from_disk(
-                f"benchmark/data/longbench/{dataset}"
-            )
+        
+        data = load_from_disk(
+            f"benchmark/data/longbench/{dataset}"
+        )
 
         out_path = os.path.join(
             output_dir_path,
-            f"{dname}.jsonl"
+            f"{dname}_{args.config_path}.jsonl"
         )
 
         print(f"Pred {dname}")
@@ -344,3 +338,5 @@ if __name__ == '__main__':
             for pred in preds:
                 json.dump(pred, f, ensure_ascii=False)
                 f.write('\n')
+
+        print(f"Complete Pred {dname}")
