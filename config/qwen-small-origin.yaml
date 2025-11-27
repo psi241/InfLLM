@@ -1,11 +1,11 @@
 model:
   type: origin
-  path: lmsys/vicuna-7b-v1.5
-  base: 10000
+  path: Qwen/Qwen2-0.5B-Instruct
+  base: 1000000
   distance_scale: 1.0
   fattn: true
 
-max_len: 4096
-chunk_size: 4096
+max_len: 32768
+chunk_size: 8192
 conv_type: qwen
 truncation: suffix
