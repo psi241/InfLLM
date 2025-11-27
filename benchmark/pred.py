@@ -314,10 +314,20 @@ if __name__ == '__main__':
             f"benchmark/data/longbench/{dataset}"
         )
 
+        base_model = os.path.basename(args.model.path)
         out_path = os.path.join(
             output_dir_path,
-            f"{dname}_{args.model.path}_{args.model.path}.jsonl"
+            f"{dname}_{base_model}_{args.model.type}.jsonl"
         )
+
+        if multiprocessing:
+            out_path = out_path + f"_{args.rank}"
+            
+        try:
+          f = open(out_path, "w+", encoding="utf-8")
+          f.close()
+        except:
+          raise FileNotFoundError("File cannot be opened.")
 
         print(f"Pred {dname}")
         prompt_format = dataset2prompt[dataset]
