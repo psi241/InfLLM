@@ -316,7 +316,7 @@ if __name__ == '__main__':
 
         out_path = os.path.join(
             output_dir_path,
-            f"{dname}_{args.path}_{args.type}.jsonl"
+            f"{dname}_{args.model.path}_{args.model.path}.jsonl"
         )
 
         print(f"Pred {dname}")
