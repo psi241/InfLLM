@@ -1,0 +1,14 @@
+model:
+  type: origin
+  path: Qwen/Qwen2-0.5B-Instruct
+  base: 1000000
+  distance_scale: 1.0
+  fattn: true
+  # rag model
+  n_doc: 16
+  n_max_doc_len: 2048
+
+max_len: 32768
+chunk_size: 2048
+conv_type: qwen
+truncation: suffix
