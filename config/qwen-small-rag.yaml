@@ -3,7 +3,7 @@ model:
   path: Qwen/Qwen2-0.5B-Instruct
   base: 1000000
   distance_scale: 1.0
-  fattn: true
+  fattn: false
   # rag model
   n_doc: 16
   n_max_doc_len: 2048
