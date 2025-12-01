@@ -3,3 +3,4 @@ __pycache__
 benchmark/data
 .DS_Store
 venv
+venv3_12
