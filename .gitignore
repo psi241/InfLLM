@@ -2,4 +2,4 @@ __pycache__
 *.jsonl
 benchmark/data
 .DS_Store
-venv
+venv*

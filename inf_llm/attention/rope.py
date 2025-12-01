@@ -20,7 +20,7 @@ class RotaryEmbeddingESM(torch.nn.Module):
 
         # Generate and save the inverse frequency buffer (non trainable)
         inv_freq = 1.0 / (
-            base ** (torch.arange(0, dim, 2, device="cuda", dtype=torch.float32) / dim)
+            base ** (torch.arange(0, dim, 2, device="mps", dtype=torch.float32) / dim)
         )
         self.register_buffer("inv_freq", inv_freq, persistent=False)
 

@@ -35,7 +35,7 @@ class GreedySearch:
     def _decode(self, input_ids, max_length=100, extra_end_token_ids=[], chunk_size: int = 4096, output=False):
         if input_ids.dim() == 1:
             input_ids = input_ids[None, :]
-        input_ids = input_ids.cuda()
+            input_ids = input_ids.to(torch.device("mps"))
         attention_mask = torch.ones_like(input_ids)
         assert input_ids.size(0) == 1
         length = input_ids.size(1)

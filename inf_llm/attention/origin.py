@@ -46,6 +46,17 @@ def origin_forward(fattn: bool, *args, **kwargs):
         else:
             dist = torch.arange(0, len_q, device=h_q.device)[:, None] - torch.arange(0, len_k, device=h_q.device)[None, :] + len_k - len_q
             attention_mask = (dist >= 0)
+
+            # modified from context_manager.py
+            def repeat_kv(t):
+                t = t.view(batch_size, num_heads_kv, 1, len_k, -1)
+                t = t.expand(batch_size, num_heads_kv, num_heads // num_heads_kv, len_k, -1)
+                t = t.reshape(batch_size, num_heads, len_k, -1)
+                return t
+            
+            h_k = repeat_kv(h_k)
+            h_v = repeat_kv(h_v)
+            
             score = torch.matmul(h_q, h_k.transpose(-1, -2))
             score = torch.masked_fill(
                 score,
