@@ -78,6 +78,7 @@ def origin_forward(fattn: bool, *args, **kwargs):
 
 
             # (batch * num_heads, len_q, len_k) @ (batch * num_heads, len_k, dim_head) = (batch * num_heads, len_q, dim_head)
+            v_expanded = v_expanded.to(score.dtype)
             o = torch.matmul(score, v_expanded)
 
             o = o.view(batch_size, num_heads, len_q, dim_head).permute(0, 2, 1, 3)
