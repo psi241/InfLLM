@@ -131,7 +131,11 @@ if __name__ == '__main__':
             if not filename.endswith("jsonl"):
                 continue
             predictions, answers, lengths = [], [], []
-            dataset = filename.split('.')[0]
+            file_title = filename.split('.')
+            name_splitted = filename.split('_')
+            dataset = '_'.join(name_splitted[:-2])
+            model_type = '_'.join(name_splitted[-2:])
+            print(f"model {name_splitted[-2]}, type {name_splitted[-1]}")
             with open(os.path.join(path, filename), "r", encoding="utf-8") as f:
                 for line in f:
                     data = json.loads(line)
@@ -151,7 +155,8 @@ if __name__ == '__main__':
                 score = scorer_e(_dataset, predictions, answers, lengths, all_classes)
             else:
                 score = scorer(_dataset, predictions, answers, all_classes)
-            scores[dataset] = score
+            score_for_model = scores.setdefault(model_type, dict())
+            score_for_model[dataset] = score
         except Exception as err:
             print(filename, err)
     out_path = os.path.join(args.dir_path, "result.json")
