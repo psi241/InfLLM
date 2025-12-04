@@ -1,5 +1,6 @@
 import torch
 from typing import Optional
+from .utils import repeat_kv
 
 def origin_forward(fattn: bool, *args, **kwargs):
     def forward(self, query : torch.Tensor,
@@ -47,22 +48,32 @@ def origin_forward(fattn: bool, *args, **kwargs):
             dist = torch.arange(0, len_q, device=h_q.device)[:, None] - torch.arange(0, len_k, device=h_q.device)[None, :] + len_k - len_q
             attention_mask = (dist >= 0)
 
-            # modified from context_manager.py
-            def repeat_kv(t):
-                t = t.view(batch_size, num_heads_kv, 1, len_k, -1)
-                t = t.expand(batch_size, num_heads_kv, num_heads // num_heads_kv, len_k, -1)
-                t = t.reshape(batch_size, num_heads, len_k, -1)
-                return t
+            # # modified from context_manager.py
+            # def repeat_kv(t):
+            #     t = t.view(batch_size, num_heads_kv, 1, len_k, -1)
+            #     t = t.expand(batch_size, num_heads_kv, num_heads // num_heads_kv, len_k, -1)
+            #     t = t.reshape(batch_size, num_heads, len_k, -1)
+            #     return t
             
-            h_k = repeat_kv(h_k)
-            h_v = repeat_kv(h_v)
+            # h_k = repeat_kv(h_k, num_heads // num_heads_kv)
+            # h_v = repeat_kv(h_v, num_heads // num_heads_kv)
+
+            k_expanded = h_k.unsqueeze(2)                # (B, Hh_v, 1, Lh_, D)
+            k_expanded = k_expanded.repeat(1, 1, num_heads // num_heads_kv, 1, 1)  # (B, Hkv, G, Lk, D)
+            k_expanded = k_expanded.view(batch_size, num_heads, len_k, dim_head)     # (B, Hq, len_k, D)
+
+            #print("k shape", k_expanded.shape)
+
+            v_expanded = h_v.unsqueeze(2)  
+            v_expanded = v_expanded.repeat(1, 1, num_heads // num_heads_kv, 1, 1)
+            v_expanded = v_expanded.view(batch_size, num_heads, len_k, dim_head)
             
-            score = torch.matmul(h_q, h_k.transpose(-1, -2))
+            score = torch.matmul(h_q, k_expanded.transpose(-2, -1))
             score = torch.masked_fill(
                 score,
                 attention_mask.view(1, 1, len_q, len_k)==False,
                 torch.scalar_tensor(float("-inf"), device=score.device, dtype=score.dtype)
-            )   # (batch, num_heads, len_q, len_k)
+            )  / torch.sqrt(torch.tensor([dim_head], device = score.device)) # (batch, num_heads, len_q, len_k)
 
             score = torch.nn.functional.softmax(score, dim=-1)
 
@@ -76,7 +87,7 @@ def origin_forward(fattn: bool, *args, **kwargs):
 
 
             # (batch * num_heads, len_q, len_k) @ (batch * num_heads, len_k, dim_head) = (batch * num_heads, len_q, dim_head)
-            o = torch.matmul(score, h_v)
+            o = torch.matmul(score, v_expanded)
 
             o = o.view(batch_size, num_heads, len_q, dim_head).permute(0, 2, 1, 3)
 

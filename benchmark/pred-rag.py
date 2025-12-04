@@ -274,8 +274,9 @@ def get_pred(
         text = {"pred": pred, "answers": json_obj["answers"], "all_classes": json_obj["all_classes"], "length": json_obj["length"], "token_length": len(tokenized_prompt) + max_gen}
         preds.append(text)
 
+        out_path = out_path + "-prog.jsonl"
         if out_path is not None:
-            with open(out_path+ "-prog.jsonl", "a+", encoding="utf-8") as f:
+            with open(out_path, "a+", encoding="utf-8") as f:
                 json.dump(prompt, f, ensure_ascii=False)
                 json.dump(text, f, ensure_ascii=False)
                 f.write('\n')
