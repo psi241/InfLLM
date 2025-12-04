@@ -47,17 +47,16 @@ def origin_forward(fattn: bool, *args, **kwargs):
             dist = torch.arange(0, len_q, device=h_q.device)[:, None] - torch.arange(0, len_k, device=h_q.device)[None, :] + len_k - len_q
             attention_mask = (dist >= 0)
 
-            # modified from context_manager.py
-            def repeat_kv(t):
-                t = t.view(batch_size, num_heads_kv, 1, len_k, -1)
-                t = t.expand(batch_size, num_heads_kv, num_heads // num_heads_kv, len_k, -1)
-                t = t.reshape(batch_size, num_heads, len_k, -1)
-                return t
+            # Consult with Generative AI for fix
+            k_expanded = h_k.unsqueeze(2)       
+            k_expanded = k_expanded.repeat(1, 1, num_heads // num_heads_kv, 1, 1) 
+            k_expanded = k_expanded.view(batch_size, num_heads, len_k, dim_head) 
+
+            v_expanded = h_v.unsqueeze(2)  
+            v_expanded = v_expanded.repeat(1, 1, num_heads // num_heads_kv, 1, 1)
+            v_expanded = v_expanded.view(batch_size, num_heads, len_k, dim_head)
             
-            h_k = repeat_kv(h_k)
-            h_v = repeat_kv(h_v)
-            
-            score = torch.matmul(h_q, h_k.transpose(-1, -2))
+            score = torch.matmul(h_q, k_expanded.transpose(-1, -2))
             score = torch.masked_fill(
                 score,
                 attention_mask.view(1, 1, len_q, len_k)==False,
@@ -76,7 +75,7 @@ def origin_forward(fattn: bool, *args, **kwargs):
 
 
             # (batch * num_heads, len_q, len_k) @ (batch * num_heads, len_k, dim_head) = (batch * num_heads, len_q, dim_head)
-            o = torch.matmul(score, h_v)
+            o = torch.matmul(score, v_expanded)
 
             o = o.view(batch_size, num_heads, len_q, dim_head).permute(0, 2, 1, 3)
 
