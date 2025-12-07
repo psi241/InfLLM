@@ -2,7 +2,7 @@ model:
   type: inf-llm
   path: Qwen/Qwen2-0.5B-Instruct
   block_size: 128
-  n_init: 128
+  n_init: 1152
   n_local: 1024
   topk: 8
   repr_topk: 4
