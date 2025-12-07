@@ -221,8 +221,7 @@ def get_pred(
     total = len(data)
 
     for i, json_obj in enumerate(tqdm(data)):
-        if i >= 20:
-            break
+
         if is_rag and not is_inf:
             json_obj["context"] = tokenized_contexts[i]["context"]
         prompt = prompt_format.format(**json_obj)
@@ -289,11 +288,11 @@ def get_pred(
         text = {"pred": pred, "answers": json_obj["answers"], "all_classes": json_obj["all_classes"], "length": json_obj["length"], "token_length": len(tokenized_prompt) + max_gen}
         preds.append(text)
 
-        if out_path is not None:
-            with open(out_path+ "-prog.jsonl", "a+", encoding="utf-8") as f:
-                json.dump(prompt, f, ensure_ascii=False)
-                json.dump(text, f, ensure_ascii=False)
-                f.write('\n')
+        # if out_path is not None:
+        #     with open(out_path+ "-prog.jsonl", "a+", encoding="utf-8") as f:
+        #         json.dump(prompt, f, ensure_ascii=False)
+        #         json.dump(text, f, ensure_ascii=False)
+        #         f.write('\n')
 
         searcher.clear()
         cur += 1
@@ -383,6 +382,7 @@ if __name__ == '__main__':
         )
         if multiprocessing:
             out_path = out_path + f"_{args.rank}"
+            
         with open(out_path, "w+", encoding="utf-8") as f:
             for pred in preds:
                 json.dump(pred, f, ensure_ascii=False)
