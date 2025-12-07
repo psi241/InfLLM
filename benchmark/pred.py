@@ -42,6 +42,7 @@ def parse_args():
     conf.datasets = []
     for d in datasets_list:
         conf.datasets.append(d.strip())
+    print(conf)
     return conf
 
 
@@ -200,7 +201,7 @@ def post_process(pred, model_name, dataset):
 
 def get_pred(
     model, tokenizer, data, max_length,
-    max_gen, prompt_format, dataset, model_name, 
+    max_gen, prompt_format, tokenized_contexts, is_inf, dataset, model_name, 
     gen_chunk_size = None, truncation: str = None, 
     rank: int = None, world_size: int = None,
     verbose: bool = False,
@@ -212,13 +213,21 @@ def get_pred(
     if world_size is not None:
         data = data[rank::world_size]
 
+    print(list(data[0].keys()))
+    
+    is_rag = len(tokenized_contexts) != 0
+
     searcher = GreedySearch(model, tokenizer)
     cur = 0
     total = len(data)
 
-    for json_obj in tqdm(data):
+    for i, json_obj in enumerate(tqdm(data)):
+        if i >= 20:
+            break
+        if is_rag and not is_inf:
+            json_obj["context"] = tokenized_contexts[i]["context"]
         prompt = prompt_format.format(**json_obj)
-
+        
         extra_end_token_ids = []
         if model_name == "llama-3-inst":
             extra_end_token_ids.append(tokenizer.encode("<|eot_id|>", add_special_tokens=False)[0])
@@ -242,6 +251,13 @@ def get_pred(
             add_special_tokens = True
 
         tokenized_prompt = tokenizer(prompt, truncation=False, return_tensors="pt", add_special_tokens=add_special_tokens).input_ids[0]
+
+        if is_rag and is_inf:
+            appended_context = torch.tensor(tokenized_contexts[i]["tokenized_context"][:4]).reshape(128 * 4).to(tokenized_prompt.device) # block_size * num_blocks
+            tokenized_prompt = torch.concat([appended_context, tokenized_prompt], dim = 0)
+
+        # Append tokenized_contexts[i]
+        print(tokenized_prompt.shape)
 
         if truncation is None:
             if len(tokenized_prompt) > max_length - max_gen:
@@ -323,6 +339,16 @@ if __name__ == '__main__':
             f"benchmark/data/longbench/{dataset}"
         )
 
+        print(len(data))
+
+        tokenized_contexts = []
+        if hasattr(args.model, "is_rag"):
+            if args.model.is_rag:
+                print("Load Retrieved Context")
+                with open(f"benchmark/data/longbench_extracted/{dataset}_extracted.jsonl") as f:
+                    for i, line in enumerate(f):
+                        tokenized_contexts.append(json.loads(line))
+
         base_model = os.path.basename(args.model.path)
         out_path = os.path.join(
             output_dir_path,
@@ -341,11 +367,15 @@ if __name__ == '__main__':
         print(f"Pred {dname}")
         prompt_format = dataset2prompt[dataset]
 
+        is_inf = args.model.type == "inf-llm"
+
+        print(f"is_inf {is_inf}")
+
         max_gen = dataset2maxlen[dataset]
         preds = get_pred(
             model, tokenizer, data, 
             args.max_len, max_gen, 
-            prompt_format, dataset, 
+            prompt_format, tokenized_contexts, is_inf, dataset, 
             args.conv_type, 
             args.chunk_size, args.truncation,
             args.rank, args.world_size,
@@ -354,9 +384,9 @@ if __name__ == '__main__':
         )
         if multiprocessing:
             out_path = out_path + f"_{args.rank}"
-        # with open(out_path, "w+", encoding="utf-8") as f:
-        #     for pred in preds:
-        #         json.dump(pred, f, ensure_ascii=False)
-        #         f.write('\n')
+        with open(out_path, "w+", encoding="utf-8") as f:
+            for pred in preds:
+                json.dump(pred, f, ensure_ascii=False)
+                f.write('\n')
 
         print(f"Complete Pred {dname}")
