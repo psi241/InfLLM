@@ -211,8 +211,6 @@ def get_pred(
 
     if world_size is not None:
         data = data[rank::world_size]
-
-    print(list(data[0].keys()))
     
     is_rag = len(tokenized_contexts) != 0
 
@@ -222,13 +220,16 @@ def get_pred(
 
     for i, json_obj in enumerate(tqdm(data)):
 
-        print(len(json_obj["context"]))
+        # print(len(json_obj["context"]))
+        # Modifty context 
+        # from https://discuss.huggingface.co/t/how-to-modify-loaded-dataset/31870/2
+        # on December 7, 2025
         if is_rag and not is_inf:
-            concat_context = "<|endoftext|>".join(tokenized_contexts[i]["context"][:24]) + "<|endoftext|>"
-            json_obj["context"] = tokenized_contexts[i]["context"]
-
+          concat_context = "<|endoftext|>".join(tokenized_contexts[i]["context"][:24]) + "<|endoftext|>"
+          json_obj["context"] = concat_context
+          
         prompt = prompt_format.format(**json_obj)
-        print(len(json_obj["context"]))
+        # print(len(json_obj["context"]))
         
         extra_end_token_ids = []
         if model_name == "llama-3-inst":
@@ -260,7 +261,7 @@ def get_pred(
             tokenized_prompt = torch.concat([appended_context, tokenized_prompt], dim = 0)
 
         # Append tokenized_contexts[i]
-        print(tokenized_prompt.shape)
+        # print(tokenized_prompt.shape)
 
         if truncation is None:
             if len(tokenized_prompt) > max_length - max_gen:
@@ -342,7 +343,7 @@ if __name__ == '__main__':
             f"benchmark/data/longbench/{dataset}"
         )
 
-        print(len(data))
+        print(f"number of tasks:", len(data))
 
         base_model = os.path.basename(args.model.path)
         out_path = os.path.join(
@@ -360,8 +361,6 @@ if __name__ == '__main__':
                         tokenized_contexts.append(json.loads(line))
 
         out_path = out_path + ".jsonl"
-
-        if args.model.is_rag
             
         try:
           f = open(out_path, "w+", encoding="utf-8")
