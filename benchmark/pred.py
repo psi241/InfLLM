@@ -222,9 +222,13 @@ def get_pred(
 
     for i, json_obj in enumerate(tqdm(data)):
 
+        print(len(json_obj["context"]))
         if is_rag and not is_inf:
+            concat_context = "<|endoftext|>".join(tokenized_contexts[i]["context"][:24]) + "<|endoftext|>"
             json_obj["context"] = tokenized_contexts[i]["context"]
+
         prompt = prompt_format.format(**json_obj)
+        print(len(json_obj["context"]))
         
         extra_end_token_ids = []
         if model_name == "llama-3-inst":
@@ -251,7 +255,8 @@ def get_pred(
         tokenized_prompt = tokenizer(prompt, truncation=False, return_tensors="pt", add_special_tokens=add_special_tokens).input_ids[0]
 
         if is_rag and is_inf:
-            appended_context = torch.tensor(tokenized_contexts[i]["tokenized_context"][:4]).reshape(128 * 4).to(tokenized_prompt.device) # block_size * num_blocks
+            all_appended_contexs = tokenized_contexts[i]["tokenized_context"][:8]
+            appended_context = torch.tensor(tokenized_contexts[i]["tokenized_context"][:8]).flatten().to(tokenized_prompt.device) # block_size * num_blocks
             tokenized_prompt = torch.concat([appended_context, tokenized_prompt], dim = 0)
 
         # Append tokenized_contexts[i]
