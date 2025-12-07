@@ -344,22 +344,24 @@ if __name__ == '__main__':
 
         print(len(data))
 
+        base_model = os.path.basename(args.model.path)
+        out_path = os.path.join(
+            output_dir_path,
+            f"{dname}_{base_model}_{args.model.type}"
+        )
+
         tokenized_contexts = []
         if hasattr(args.model, "is_rag"):
             if args.model.is_rag:
                 print("Load Retrieved Context")
+                out_path = out_path + "_rag"
                 with open(f"benchmark/data/longbench_extracted/{dataset}_extracted.jsonl") as f:
                     for i, line in enumerate(f):
                         tokenized_contexts.append(json.loads(line))
 
-        base_model = os.path.basename(args.model.path)
-        out_path = os.path.join(
-            output_dir_path,
-            f"{dname}_{base_model}_{args.model.type}.jsonl"
-        )
+        out_path = out_path + ".jsonl"
 
-        if multiprocessing:
-            out_path = out_path + f"_{args.rank}"
+        if args.model.is_rag
             
         try:
           f = open(out_path, "w+", encoding="utf-8")
@@ -385,8 +387,6 @@ if __name__ == '__main__':
             args.verbose,
             out_path,
         )
-        if multiprocessing:
-            out_path = out_path + f"_{args.rank}"
             
         with open(out_path, "w+", encoding="utf-8") as f:
             for pred in preds:
