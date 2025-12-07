@@ -5,8 +5,7 @@ model:
   distance_scale: 1.0
   fattn: false
   # rag model
-  n_doc: 16
-  n_max_doc_len: 2048
+  is_rag: true
 
 max_len: 32768
 chunk_size: 2048
