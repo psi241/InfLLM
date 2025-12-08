@@ -4,3 +4,4 @@ benchmark/data
 .DS_Store
 venv
 venv3_12
+benchmark/longbench-result
