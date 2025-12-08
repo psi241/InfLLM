@@ -355,7 +355,7 @@ if __name__ == '__main__':
         if hasattr(args.model, "is_rag"):
             if args.model.is_rag:
                 print("Load Retrieved Context")
-                out_path = out_path + "-rag"
+                out_path = out_path + "_rag"
                 with open(f"benchmark/data/longbench_extracted/{dataset}_extracted.jsonl") as f:
                     for i, line in enumerate(f):
                         tokenized_contexts.append(json.loads(line))
