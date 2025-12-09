@@ -1,6 +1,7 @@
 __pycache__
 *.jsonl
 benchmark/data
+benchmark/longbench-result
 .DS_Store
 venv
 venv3_12
